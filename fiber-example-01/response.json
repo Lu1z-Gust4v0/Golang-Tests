@@ -1,0 +1,9 @@
+{
+  "albums":[
+    {"id":1,"title":"Fly me to the moon","artist":"Frank Sinatra","price":59.99},
+    {"id":2,"title":"Billy Jean","artist":"Michael Jackson","price":59.99},
+    {"id":3,"title":"Love me like you used to","artist":"Lord Huron","price":29.99}
+  ],
+    "error":null,
+    "message":"Albums fetched successfully"
+}
