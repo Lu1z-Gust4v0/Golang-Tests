@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/resources/styles.css">
+  <title>Wiki - {{.Title}}</title>
+</head>
+<body class="view-page">
+  <h1 class="view-page-heading">{{.Title}}</h1>
+
+  <div class="page-body">
+    {{ printf "%s" .Body }}
+  </div>
+
+  <p class="edit-paragraph"><a href="/edit/{{.Title}}">edit</a></p>
+</body>
+</html>

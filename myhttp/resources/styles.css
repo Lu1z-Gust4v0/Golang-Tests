@@ -1,0 +1,85 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: serif;
+}
+
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  padding: 1rem 2rem;
+}
+
+.view-page-heading,
+.edit-page-heading {
+  font-size: 2rem;
+  text-transform: capitalize;
+  font-weight: 700;
+  color: blueviolet;
+  margin-bottom: 0.5rem;
+}
+
+.view-page .page-body {
+  padding: 1rem 0rem;
+  color: black;
+  opacity: 0.7;
+  line-height: 1.5rem;
+  max-width: 50ch;
+}
+
+.edit-paragraph a {
+  display: inline-flex;
+  text-decoration: none;
+  text-transform: capitalize;
+  padding: 0.25rem 1rem;
+  border: 1px solid blueviolet;
+  font-size: 1.05rem;
+  border-radius: 0.25rem;
+  transition: background 300ms ease-in,
+    color 300ms ease-in;
+}
+
+.edit-paragraph a:hover {
+  background-color: blueviolet;
+  color: white;
+}
+
+.edit-page .edit-form textarea {
+  border: 1px solid rgba(0, 0, 0, 0.7);
+  max-height: 400px;
+  width: 300px;
+  padding: 0 0.25rem;
+  font-size: 1.1rem;
+  color: rgba(0, 0, 0, 0.7);
+  resize: none;
+  border-radius: 0.35rem;
+  overflow-y: auto;
+}
+
+.edit-page .edit-form textarea:focus {
+  outline: 1px solid lawngreen;
+}
+
+.edit-page .edit-form input {
+  display: inline-flex;
+  text-decoration: none;
+  text-transform: capitalize;
+  background: white;
+  color: blueviolet;
+  padding: 0.25rem 1rem;
+  border: 1px solid blueviolet;
+  font-size: 1.05rem;
+  border-radius: 0.25rem;
+  transition: background 300ms ease-in,
+    color 300ms ease-in;
+  cursor: pointer;
+}
+
+.edit-page .edit-form input:hover {
+  background-color: blueviolet;
+  color: white;
+}

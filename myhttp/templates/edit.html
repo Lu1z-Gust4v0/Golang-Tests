@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/resources/styles.css">
+  <title>Edit - {{.Title}}</title>
+</head>
+<body class="edit-page">
+  <h1 class="edit-page-heading">Editing {{.Title}}</h1>
+
+  <form class="edit-form" action="/save/{{.Title}}" method="POST">
+    <div class="form-row">
+      <textarea name="body" rows="20" cols="20">{{printf "%s" .Body}}</textarea>
+    </div>
+    <div class="form-row">
+      <input type="submit" value="Save">
+    </div>
+  </form>  
+</body>
+</html>
+
+
