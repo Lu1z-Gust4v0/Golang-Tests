@@ -6,7 +6,7 @@ import (
 
 type BakeryState struct {
   mutex             sync.Mutex
-  Balance           int
+  Balance           float32
   PendingOrders     int
   CakesToBake       int 
   CakesToDecorate   int
@@ -24,11 +24,11 @@ type BakeryChannels struct {
 
 type Order struct {
   Id          uint    `json:"id"          validate:"required"` 
+  Size        string  `json:"size"        validate:"required"`
   Flavor      string  `json:"flavor"      validate:"required"` 
   Decoration  string  `json:"decoration"  validate:"required"` 
   Package     string  `json:"package"     validate:"required"`
   Delivery    string  `json:"delivery"    validate:"required"` 
-  Total       int     `json:"total"       validate:"required"`
 }
 
 type Cake struct {
@@ -57,6 +57,6 @@ func SetUpBakery(capacity int, config WorkersConfig) {
     CakesToDeliver: make(chan Cake, capacity),
   }
   
-  InitMenu()
+  SetUpMenu()
   SetUpWorkers(config)
 }
