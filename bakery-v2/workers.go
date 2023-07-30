@@ -7,7 +7,8 @@ import (
 
 
 type WorkersConfig struct {
-	AttendantsCount     int `json:"attendants"`
+  Limiters            int `json:"limiters"`
+  AttendantsCount     int `json:"attendants"`
 	MachinesCount       int `json:"machines"`
 	BakersCount         int `json:"bakers"`
 	PackersCount        int `json:"packers"`
@@ -17,12 +18,16 @@ type WorkersConfig struct {
 func TimeNow() string {
   now := time.Now()
 
-  return fmt.Sprintf("%d/%d/%d - %d:%d:%d",
+  return fmt.Sprintf("%02d/%02d/%d - %02d:%02d:%02d",
     now.Day(), now.Month(), now.Year(), now.Hour(), now.Minute(), now.Second(),
   )
 }
 
 func SetUpWorkers(config WorkersConfig) {
+  for i := 0; i < config.Limiters; i++ {
+    go Limiter(i + 1)
+  }
+
 	for i := 0; i < config.AttendantsCount; i++ {
 		go Attendant(i + 1)
 	}
@@ -44,6 +49,18 @@ func SetUpWorkers(config WorkersConfig) {
 	}
 }
 
+var LimiterQueue = make(chan Order, 100)
+
+func Limiter(index int) {
+  for request := range LimiterQueue {
+    fmt.Printf("[Limiter %v] \tRequest %v is being limited \t[%v]\n", 
+      index, request.Id, TimeNow(),
+    )
+    time.Sleep(200 * time.Millisecond) 
+    bakeryChannels.PendingOrders <- request
+  } 
+} 
+
 func Attendant(index int) {
 	for order := range bakeryChannels.PendingOrders {
 		var cake = Cake{
@@ -51,8 +68,8 @@ func Attendant(index int) {
 			State: "ordered",
 		}
     
-    fmt.Printf("Attendant [%v]: [%v] Ordering a %v cake decorated with %v at %v\n", 
-      index, order.Id, order.Flavor, order.Decoration, TimeNow(),
+    fmt.Printf("[Attndt %v]: \t[Order %v] Ordering \t%v %v cake \t[%v]\n", 
+      index, order.Id, order.Size, order.Flavor, TimeNow(),
     )
 
 		time.Sleep(500 * time.Millisecond)
@@ -70,8 +87,8 @@ func DoughMachine(index int) {
   for cake := range bakeryChannels.CakesToBake {
     cake.State = "baked"
    
-    fmt.Printf("Machine [%v]: [%v] Baking a %v cake at %v\n",
-      index, cake.Order.Id, cake.Order.Flavor, TimeNow(),
+    fmt.Printf("[Machine %v]: \t[Order %v] Baking \t%v %v cake \t[%v]\n",
+      index, cake.Order.Id, cake.Order.Size,cake.Order.Flavor, TimeNow(),
     )
     
     time.Sleep(2 * time.Second)
@@ -89,8 +106,8 @@ func Baker(index int) {
   for cake := range bakeryChannels.CakesToDecorate {
     cake.State = "decorated"
    
-    fmt.Printf("Baker [%v]: [%v] Decorating a %v cake with %v at %v\n",
-      index, cake.Order.Id, cake.Order.Flavor, cake.Order.Decoration, TimeNow(),
+    fmt.Printf("[Baker %v]: \t[Order %v] Decorating \t%v %v cake \t[%v]\n",
+      index, cake.Order.Id, cake.Order.Size, cake.Order.Flavor, TimeNow(),
     )
 
     time.Sleep(time.Second)
@@ -108,8 +125,8 @@ func Packer(index int) {
   for cake := range bakeryChannels.CakesToPack {
     cake.State = "packed"
    
-    fmt.Printf("Packer [%v]: [%v] Packing a %v cake at %v\n",
-      index, cake.Order.Id, cake.Order.Flavor, TimeNow(),
+    fmt.Printf("[Packer %v]: \t[Order %v] Packing \t%v %v cake \t[%v]\n",
+      index, cake.Order.Id, cake.Order.Size, cake.Order.Flavor, TimeNow(),
     )
 
     time.Sleep(500 * time.Millisecond)
@@ -127,8 +144,8 @@ func DeliveryTruck(index int) {
   for cake := range bakeryChannels.CakesToDeliver {
     cake.State = "delivered"
    
-    fmt.Printf("Truck [%v]: [%v] delivering a %v cake at %v\n",
-      index, cake.Order.Id, cake.Order.Flavor, TimeNow(),
+    fmt.Printf("[Truck %v]: \t[Order %v] Delivering \t%v %v cake \t[%v]\n",
+      index, cake.Order.Id, cake.Order.Size, cake.Order.Flavor, TimeNow(),
     )
     
     if cake.Order.Delivery == "fast" {
@@ -137,13 +154,13 @@ func DeliveryTruck(index int) {
       time.Sleep(2 * time.Second)
     } 
 
-    fmt.Printf("Truck [%v]: Cake [%v] delivered at %v\n",
-      index, cake.Order.Id, TimeNow(),
+    fmt.Printf("[Truck %v]: \t[Order %v] Delivered \t%v %v cake \t[%v]\n",
+      index, cake.Order.Id, cake.Order.Size, cake.Order.Flavor, TimeNow(),
     )
 
     bakeryState.mutex.Lock()
     bakeryState.CakesToDeliver -= 1
-    bakeryState.Balance += cake.Order.Total
+    bakeryState.Balance += CalculateOrderPrice(cake.Order)
     bakeryState.mutex.Unlock()
   }
 }

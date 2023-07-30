@@ -1,31 +1,76 @@
 package main
 
 import (
-  "github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2"
 ) 
 
-func MakeNewOrder(context *fiber.Ctx) error {
-  order := new(Order)
+type NewOrderRequestBody struct {
+  Size        string `json:"size"       validation:"required"` 
+  Flavor      string `json:"flavor"     validation:"required"`
+  Decoration  string `json:"decoration" validation:"required"` 
+  Package     string `json:"package"    validation:"required"` 
+  Delivery    string `json:"delivery"   validation:"required"`
+}
 
-  if error := context.BodyParser(order); error != nil {
+func MakeNewOrder(context *fiber.Ctx) error {
+  newOrder := new(NewOrderRequestBody)
+
+  if error := context.BodyParser(newOrder); error != nil {
     return context.Status(fiber.StatusBadRequest).JSON(fiber.Map{
       "message": "Invalid Order",
       "error": error,
     }) 
   } 
 
-  bakeryState.PendingOrders += 1
-  bakeryChannels.PendingOrders <- Order{
-    Id: order.Id,
-    Flavor: order.Flavor,
-    Decoration: order.Decoration,
-    Package: order.Package,
-    Delivery: order.Delivery,
-    Total: order.Total,
-  } 
+  order, error := CreateNewOrder( 
+    newOrder.Size, 
+    newOrder.Flavor, 
+    newOrder.Decoration, 
+    newOrder.Package, 
+    newOrder.Delivery,
+  ) 
+  
+  if error != nil {
+    return context.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+      "message": "Invalid Order",
+      "order": nil,
+      "error": error,
+    })
+  }
+  
+  if len(bakeryChannels.PendingOrders) == cap(bakeryChannels.PendingOrders) {
+    LimiterQueue <- *order
+    
+    return context.Status(fiber.StatusOK).JSON(fiber.Map{
+      "message": "Order completed sucessfully",
+      "order": *order,
+      "error": nil,
+    })
+  }  
+
+  bakeryChannels.PendingOrders <- *order
 
   return context.Status(fiber.StatusOK).JSON(fiber.Map{
     "message": "Order completed sucessfully",
+    "order": *order,
+    "error": nil,
+  })
+}
+
+func CheckBakeryBalance(context *fiber.Ctx) error {
+  balance := bakeryState.Balance 
+  
+  if balance == 0 {
+    return context.Status(fiber.StatusOK).JSON(fiber.Map{
+      "message": "Unfortunately we ran out of money",
+      "balance": balance,
+      "error": nil,
+    })
+  }
+
+  return context.Status(fiber.StatusOK).JSON(fiber.Map{
+    "message": "Bakery's balance fetched sucessfully",
+    "balance": balance,
     "error": nil,
   })
 }
